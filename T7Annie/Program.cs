@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using EnsoulSharp;
 using EnsoulSharp.SDK;
+using EnsoulSharp.SDK.Events;
 using EnsoulSharp.SDK.MenuUI;
+using EnsoulSharp.SDK.MenuUI.Values;
+using EnsoulSharp.SDK.Prediction;
 using EnsoulSharp.SDK.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
@@ -36,10 +39,10 @@ namespace T7Annie
             Q = new Spell(SpellSlot.Q, 625f);
             Q.SetTargetted(0.25f, 1392f); //real speed found manually
             W = new Spell(SpellSlot.W, 550f);
-            W.SetSkillshot(0.25f, 50f, 3000f, false, SpellType.Cone);
+            W.SetSkillshot(0.25f, 50f, 3000f, false, SkillshotType.Cone);
             E = new Spell(SpellSlot.E);
             R = new Spell(SpellSlot.R, 600f);
-            R.SetSkillshot(0.25f, 50f, 9999f, false, SpellType.Circle);
+            R.SetSkillshot(0.25f, 50f, 9999f, false, SkillshotType.Circle);
 
             Potion = new Items.Item(ItemId.Health_Potion, 0f);
             Biscuit = new Items.Item(ItemId.Total_Biscuit_of_Rejuvenation, 0f);
@@ -55,7 +58,7 @@ namespace T7Annie
 
             Game.OnUpdate += OnUpdate;
             Drawing.OnDraw += OnDraw;
-            Orbwalker.OnBeforeAttack += OnBeforeAA;
+            Orbwalker.OnAction += OnAction;
             AIBaseClient.OnProcessSpellCast += OnProcessSpellCast;
             AIHeroClient.OnAggro += OnAggro;
             AIHeroClient.OnLevelUp += OnLevelUp;
@@ -126,27 +129,27 @@ namespace T7Annie
                         if (args.End.DistanceToPlayer() < args.SData.CastRadius - 20) E.Cast();
                         break;
                     case SpellDataCastType.Missile:
-                        var pred = new PredictionInput();
-                        pred.Type = SpellType.Line;
+                        var pred = new SpellPrediction.PredictionInput();
+                        pred.Type = SkillshotType.Line;
                         pred.Range = args.SData.CastRange;
                         pred.Speed = args.SData.MissileSpeed;
                         pred.Radius = args.SData.LineWidth;
 
-                        if (Prediction.GetPrediction(pred).CollisionObjects.Contains(myhero)) E.Cast();
+                        if (SpellPrediction.GetPrediction(pred).CollisionObjects.Contains(myhero)) E.Cast();
                         break;
                 }
             }
             else if (args.Target == myhero) E.Cast();
         }
 
-        private static void OnBeforeAA(object sender, BeforeAttackEventArgs args)
+        private static void OnAction(object sender, OrbwalkerActionArgs args)
         {
             var target = TargetSelector.GetTarget(1000f);
-            if (target != null)
+            if (target != null && args.Type == OrbwalkerType.BeforeAttack) 
             {
-                if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && (Q.IsReady() || W.IsReady()) && myhero.IsFacing(target) && myhero.InAutoAttackRange(target)) args.Process = false;
+                if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && (Q.IsReady() || W.IsReady()) && myhero.IsFacing(target) && target.InAARangeOf(myhero)) args.Process = false;
 
-                if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear && Q.IsReady() && comb(laneclear, "lq") == 2) args.Process = false;
+                if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear && Q.IsReady() && comb(laneclear, "lq") == 2 && myhero.ManaPercent >= slider(laneclear, "manamin")) args.Process = false;
             }
         }
         #endregion
@@ -201,7 +204,7 @@ namespace T7Annie
 
             if (combo.check("cign") && target.killable())
             {
-                if ((target.Health < myhero.GetAutoAttackDamage(target) && myhero.InAutoAttackRange(target)) || target.killable(false)) return;
+                if ((target.Health < myhero.GetAutoAttackDamage(target) && target.InAARangeOf(myhero)) || target.killable(false)) return;
                 ignite.Cast(target);
             }
         }
@@ -310,7 +313,7 @@ namespace T7Annie
         {
             if (menu.check("usee") && E.IsReady()) // Spaghetti shield
             {
-                var closee = GameObjects.EnemyHeroes.Where(x => x.InAutoAttackRange(myhero) && (x.IsFacing(myhero) || x.GetWaypoints().LastOrDefault().DistanceToPlayer() < 100f));
+                var closee = GameObjects.EnemyHeroes.Where(x => myhero.InAARangeOf(x) && (x.IsFacing(myhero) || x.GetWaypoints().LastOrDefault().DistanceToPlayer() < 100f));
 
                 if (gotAggro && !closee.Any())
                 {
@@ -478,6 +481,12 @@ namespace T7Annie
             var turret = GameObjects.AllyTurrets.OrderBy(x => x.Distance(target.Position)).FirstOrDefault();
             if (turret != null) return target.Distance(turret.Position) < turret.AttackRange;
             else return false;
+        }
+
+        public static bool InAARangeOf(this AIHeroClient player, AIHeroClient target)
+        {
+            if (player.Distance(target.Position) < target.AttackRange) return true;
+            return false;
         }
     }
     #endregion
