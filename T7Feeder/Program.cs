@@ -418,7 +418,7 @@ namespace T7Feeder
             menu.Add(new MenuSeparator("sep1", "By Toyota7 v1.2b"));
             menu.Add(new MenuSeparator("sep2", "|"));
             menu.Add(new MenuBool("ACTIVE", "Active"));
-            menu.Add(new MenuList("MODE", "Feed Mode =>", new string[] { "Closest Enemy", "Top", "Mid", "Bot" }, 2));
+            menu.Add(new MenuList("MODE", "Feed Mode =>", new string[] { "Closest Enemy", "Top", "Mid", "Bot" }, 0));
             menu.Add(new MenuList("MSGS", "Chat On Death =>", new string[] { "Off", "/all Chat", "Team Chat", "Random Chat" }, 0));
             menu.Add(new MenuSlider("CHATDELAY", "Chat Delay After Death(seconds)", 4, 1, 7));
             menu.Add(new MenuBool("SPELLS", "Use Summoner Spells", false));
