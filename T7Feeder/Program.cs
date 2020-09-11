@@ -199,7 +199,7 @@ namespace T7Feeder
         public static void OnLoad()
         {
             
-            Tick.OnTick += OnTick;
+            Game.OnUpdate += OnTick;
             GameEvent.OnGameEnd += OnEnd;
             DatMenu();
 
