@@ -242,9 +242,9 @@ namespace T7Feeder
 
         private static void SummonerSpells()
         {
-            if (Heal.IsReady() && !myhero.HasBuff("SRHomeguardSpeed") && !myhero.IsDead) Heal.Cast();
+            if (Heal != null && Heal.IsReady() && !myhero.HasBuff("SRHomeguardSpeed") && !myhero.IsDead) Heal.Cast();
 
-            if (Ghost.IsReady() && !myhero.HasBuff("SRHomeguardSpeed") && !myhero.IsDead) Ghost.Cast();
+            if (Ghost != null && Ghost.IsReady() && !myhero.HasBuff("SRHomeguardSpeed") && !myhero.IsDead) Ghost.Cast();
         }
 
         private static void Shopping()
