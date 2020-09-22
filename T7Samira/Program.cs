@@ -509,16 +509,16 @@ namespace T7Samira
                 hitchance = (HitChance)comb(misc, "chit") + 1;
             };
             misc.Add(new MenuBool("BW", "Block Dangerous Spells With W"));
-            foreach (var target in GameObjects.EnemyHeroes)
-            {
-                if (target.Spellbook.GetSpell(SpellSlot.Q).SData.CastType == SpellDataCastType.Missile ||
-                    target.Spellbook.GetSpell(SpellSlot.W).SData.CastType == SpellDataCastType.Missile ||
-                    target.Spellbook.GetSpell(SpellSlot.E).SData.CastType == SpellDataCastType.Missile ||
-                    target.Spellbook.GetSpell(SpellSlot.R).SData.CastType == SpellDataCastType.Missile)
-                {
-                    misc.Add(new MenuBool("B" + target.Name, "Block " + target.Name));
-                }
-            }
+            //foreach (var target in GameObjects.EnemyHeroes)
+            //{
+            //    if (target.Spellbook.GetSpell(SpellSlot.Q).SData.CastType == SpellDataCastType.Missile ||
+            //        target.Spellbook.GetSpell(SpellSlot.W).SData.CastType == SpellDataCastType.Missile ||
+            //        target.Spellbook.GetSpell(SpellSlot.E).SData.CastType == SpellDataCastType.Missile ||
+            //        target.Spellbook.GetSpell(SpellSlot.R).SData.CastType == SpellDataCastType.Missile)
+            //    {
+            //        misc.Add(new MenuBool("B" + target.Name, "Block " + target.Name));
+            //    }
+            //}
             misc.Add(new MenuBool("PS", "Always Proc Passive On Stunned Enemies", false));
             misc.Add(new MenuBool("QGAP", "Use Q(Ranged) On Gapclosers", false));
             misc.Add(new MenuBool("HQ", "Use Q(Ranged) To Harass"));
