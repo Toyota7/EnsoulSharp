@@ -83,7 +83,7 @@ namespace T7Samira
             }
         }
 
-        private static void OnEndScene(EventArgs args)
+        private static void OnEndScene(EventArgs args) //Credits babazhou
         {
             foreach (var target in GameObjects.EnemyHeroes.Where(x => x.IsValidTarget(2000) && !x.IsDead && x.IsHPBarRendered && Drawing.WorldToScreen(x.Position).IsOnScreen()))
             {
