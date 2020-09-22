@@ -31,7 +31,6 @@ namespace T7Samira
             Q2.SetSkillshot(0.25f, 150f, 9999f, false, SkillshotType.Cone);
             W = new Spell(SpellSlot.W, 390f);
             E = new Spell(SpellSlot.E, 600f);
-            //E.SetSkillshot(0f, 170f, 2050f, false, SkillshotType.Line);
             R = new Spell(SpellSlot.R, 600f);
             
             ConeAOEInput = new SpellPrediction.PredictionInput { Aoe = true, Collision = false, CollisionObjects = CollisionObjects.Heroes, Delay = 0.25f, From = myhero.Position, Type = SkillshotType.Cone, Range = 350f, Radius = 120f, Speed = 9999f };
@@ -118,20 +117,11 @@ namespace T7Samira
             }
         }
 
-        //private static void OnProcessSpell(AIBaseClient sender, AIBaseClientProcessSpellCastEventArgs args)
-        //{
-        //    if (misc.check("BW") && sender.IsEnemy && W.IsReady() && args.Slot == SpellSlot.R && args.SData.CastType == SpellDataCastType.Missile && args.Target.IsMe)
-        //    {
-        //        //DelayAction.Add((int)((args.Start.DistanceToPlayer() / args.SData.MissileSpeed) * 1000) + (int)(args.CastTime * 1000) - 300,delegate { Game.Print(true); W.Cast(); });
-        //    }                
-        //}
-
         private static void OnMissile(GameObject sender, EventArgs args)
         {
             var missile = sender as MissileClient;
             if (sender.IsEnemy && !sender.Name.Contains("Minion") && !sender.Name.Contains("Basic") && KnownMissiles.Contains(missile.Name))
             {
-                //Game.Print(sender.Name);
                 IncomingMissile = missile;
             }              
         }
@@ -220,33 +210,8 @@ namespace T7Samira
 
             var target = TargetSelector.GetTarget(1000f, DamageType.Physical);
 
-            //if (draw.check("DRAWTARGET") && target != null && target.DistanceToPlayer() < R.Range)
-            //{
-            //    Render.Circle.DrawCircle(target.Position, target.BoundingRadius - 10, Color.LightBlue, 3);
-            //}
-
-
-            //Drawing.DrawLine(Drawing.WorldToScreen(myhero.Position), Drawing.WorldToScreen(myhero.Direction), 3, Color.Red);
-            //Drawing.
-            //var test = new Geometry.Line(target.HPBarPosition, target.HPBarPosition+ new Vector2(20, 20), 100);
-            //test.UpdatePolygon();
-            //test.Draw(Color.Red, 25);
-            //var test = new EnsoulSharp.SDK.Utility.Render.Line(myhero.HPBarPosition + new Vector2(-50, -50), myhero.HPBarPosition + new Vector2(0, 20), 50, SharpDX.ColorBGRA.FromRgba(Color.Red.ToRgba()));
-            //test.Add(1f);
-            //Game.Print();
-            //test.
-
-
-            //Geometry.Rectangle test = new Geometry.Rectangle(ObjectManager.Player.Position, myhero.Position.Extend(Game.CursorPos, 350), 79);
-            //test.Draw(Color.Red);
-            //foreach (var targe in GameObjects.EnemyHeroes.Where(x => !x.IsDead && x.IsVisibleOnScreen))
-            //{
-            //    Drawing.DrawText(Drawing.WorldToScreen(targe.Position).X - 20, Drawing.WorldToScreen(targe.Position).Y + 30, targe.killable() ? Color.White : Color.Transparent, "Killable");
-            //}
-            //Drawing.DrawText(Drawing.WorldToScreen(myhero.Position).X - 20, Drawing.WorldToScreen(myhero.Position).Y + 30, Color.Green, WaitforAA.ToString());
             if (target != null)
             {
-                //Game.Print(target.DistanceToPlayer());
 
                 if (draw.check("DRAWWAY") && target.GetWaypoints().Any())
                 {
@@ -259,11 +224,6 @@ namespace T7Samira
                 }
 
             }
-            //for (int i = 0; i < myhero.Buffs.Count(); i++)
-            //{
-            //    var buff = myhero.Buffs.ToArray()[i];
-            //    Drawing.DrawText(Drawing.WorldToScreen(Game.CursorPos).X, Drawing.WorldToScreen(Game.CursorPos).Y + (14 * i) + 60, Color.Red, buff.Name + " " + buff.Count);
-            //}
         }
 
         private static void OnUpdate(EventArgs args)
@@ -293,12 +253,9 @@ namespace T7Samira
 
                 if (jumptarget != null)
                 {
-                    //Game.Print(true);
                     E.Cast(jumptarget);
                 }
             }
-            //var target = GetTarget();
-            //if (target != null) Game.Print(target.qtt(R.Speed, 500) / 1000);
         }
         #endregion
 
@@ -313,18 +270,6 @@ namespace T7Samira
                 WaitforAA = true;
                 return;
             }
-
-            //if(myhero.HasBuff(RBuffName) && E.IsReady() && GameObjects.EnemyHeroes.Where(x => x.DistanceToPlayer() < E.Range).Any())
-            //{
-            //    var jumptarget = GameObjects.EnemyHeroes.Where(x => x.DistanceToPlayer() < E.Range).OrderBy(x => x.Health).FirstOrDefault();
-
-            //    if (jumptarget != null)
-            //    {
-            //        //Game.Print(true);
-            //        E.Cast(jumptarget);
-            //    }
-            //}
-
             if (combo.check("CQ") && Q1.IsReady() && !(WaitforAA || LastAttackType == 1))
             {
                 if (target.DistanceToPlayer() < Q2.Range)
@@ -346,11 +291,6 @@ namespace T7Samira
                         WaitforAA = true;
                         LastAttackType = 1;
                     } 
-                    //else if(pred.Hitchance == HitChance.Collision && E.IsInRange(target) && E.IsReady() && combo.check("CE") && E.Cast(target) == CastStates.SuccessfullyCasted)
-                    //{
-                    //    LastAttackType = 3;
-                    //    WaitforAA = true;
-                    //}
                 }
             }
 
@@ -378,10 +318,6 @@ namespace T7Samira
                         }
                     }
                 }
-                //else if (target.DistanceToPlayer() < 500 && combo.check("CEG"))
-                //{
-                //    //return;
-                //}
                 else if (target.DistanceToPlayer() <= E.Range && combo.check("CES") && !WaitforAA && LastAttackType != 3 && (target.Distance(closeenemyturret) >= 850 || (myhero.HealthPercent > 40 || target.GetTotalSpelldamage() > target.Health)) /*&& !(Q1.IsReady() && !WaitforAA && LastAttackType != 3) *//*!((Q1.IsReady() && LastAttackType != 1 && target.DistanceToPlayer() < Q1.Range) || !(WaitforAA && target.InAARangeOf(myhero)))*/)
                 {
                     //Game.Print(true);
@@ -432,12 +368,6 @@ namespace T7Samira
             {
                 if (laneclear.check("LQ") && Q1.IsReady() && !(laneclear.check("LQCLOSE") && !targets.Any(x => x.DistanceToPlayer() < 350)))
                 {
-                    //if (slider(laneclear, "LQMIN") > 1)
-                    //{
-
-                    //}
-                    //var minion = targets.FirstOrDefault(x => HealthPrediction.GetPrediction(x, x.qtt(Q1.Speed, 250)) > 5 && !(targets.Count() > 1 && x == Orbwalker.GetTarget()));
-
                     foreach (var minion in targets)
                     {
                         SpellPrediction.PredictionOutput pred = null;
@@ -528,11 +458,6 @@ namespace T7Samira
 
                 else if (Items.CanUseItem(myhero, CPotion.Id)) CPotion.Cast();
             }
-
-            
-
-            //if (misc["FOCUS"].GetValue<MenuList>().Index == 2) misc["CFOCUS"].GetValue<MenuList>().Visible = true;
-            //else misc["CFOCUS"].GetValue<MenuList>().Visible = false;
         }
 
         static void DatMenu()
