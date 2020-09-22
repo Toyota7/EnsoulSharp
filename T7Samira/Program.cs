@@ -320,7 +320,6 @@ namespace T7Samira
                 }
                 else if (target.DistanceToPlayer() <= E.Range && combo.check("CES") && !WaitforAA && LastAttackType != 3 && (target.Distance(closeenemyturret) >= 850 || (myhero.HealthPercent > 40 || target.GetTotalSpelldamage() > target.Health)) /*&& !(Q1.IsReady() && !WaitforAA && LastAttackType != 3) *//*!((Q1.IsReady() && LastAttackType != 1 && target.DistanceToPlayer() < Q1.Range) || !(WaitforAA && target.InAARangeOf(myhero)))*/)
                 {
-                    //Game.Print(true);
                     E.Cast(target);
                     LastAttackType = 3;
                     WaitforAA = true;
