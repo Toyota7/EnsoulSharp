@@ -203,7 +203,7 @@ namespace T7Annie
                 R.CastOnUnit(target);
             }
 
-            if (combo.check("cign") && target.killable())
+            if (combo.check("cign") && ignite != null && ignite.CanCast(target) && target.killable())
             {
                 if ((target.Health < myhero.GetAutoAttackDamage(target) && target.InAARangeOf(myhero)) || target.killable(false)) return;
                 ignite.Cast(target);
@@ -464,7 +464,7 @@ namespace T7Annie
             var dmg = (HasCorona.Q.IsReady() ? HasCorona.Q.GetDamage(target) : 0) +
                       (HasCorona.W.IsReady() ? HasCorona.W.GetDamage(target) : 0) +
                       (HasCorona.R.IsReady() ? HasCorona.R.GetDamage(target) : 0) +
-                      (withignite ? (HasCorona.ignite.IsReady() ? HasCorona.myhero.GetSummonerSpellDamage(target, SummonerSpell.Ignite) : 0) : 0) +
+                      (withignite ? ((HasCorona.ignite != null && HasCorona.ignite.IsReady()) ? HasCorona.myhero.GetSummonerSpellDamage(target, SummonerSpell.Ignite) : 0) : 0) +
                       HasCorona.myhero.GetAutoAttackDamage(target) * 3+
                       extradmgsrc +
                       (HasCorona.R.IsReady() ? tibberaa : 0);
