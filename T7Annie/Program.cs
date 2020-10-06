@@ -151,6 +151,7 @@ namespace T7Annie
 
                 if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear && Q.IsReady() && comb(laneclear, "lq") == 2 && myhero.ManaPercent >= slider(laneclear, "manamin")) args.Process = false;
             }
+            else if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && combo.check("cnaa") && args.Type == OrbwalkerType.BeforeAttack) args.Process = false;
         }
         #endregion
 
@@ -411,6 +412,7 @@ namespace T7Annie
             combo.Add(new MenuBool("crk", "Only R If Killable"));
             combo.Add(new MenuBool("cign", "Use Ignite"));
             combo.Add(new MenuList("chit", "Min Prediction Hitchance", new string[] { "Low", "Medium", "High", "Very High" }, 1));
+            combo.Add(new MenuBool("cnaa", "Disable AA In Combo", false));
             menu.Add(combo);
 
             laneclear = new Menu("lanec", "Laneclear");
