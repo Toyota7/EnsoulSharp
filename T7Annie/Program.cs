@@ -271,7 +271,6 @@ namespace T7Annie
 
                 var target = targets.OrderByDescending(x => x.Health).FirstOrDefault(x => x as AttackableUnit != Orbwalker.GetTarget());
                 if (target != null) R.CastOnUnit(target);
-                Game.Print(true);
             }
         }
 
