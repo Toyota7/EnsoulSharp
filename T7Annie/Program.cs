@@ -151,7 +151,11 @@ namespace T7Annie
 
                 if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear && Q.IsReady() && comb(laneclear, "lq") == 2 && myhero.ManaPercent >= slider(laneclear, "manamin")) args.Process = false;
             }
-            else if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && combo.check("cnaa") && args.Type == OrbwalkerType.BeforeAttack) args.Process = false;
+            
+            if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && combo.check("cnaa") && args.Type == OrbwalkerType.BeforeAttack)
+            {
+                args.Process = false;
+            }
         }
         #endregion
 
