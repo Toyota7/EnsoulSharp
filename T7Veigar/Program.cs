@@ -238,22 +238,6 @@ namespace T7Veigar
                     Drawing.DrawLine(Drawing.WorldToScreen(target.Position), Drawing.WorldToScreen(wayp.ToVector3World()), 2, Color.White);
                 }
             }
-            if (target != null && target.Position.IsOnScreen())
-            {
-                var test = target.IsFacing(myhero);
-                var way = target.GetWaypoints().LastOrDefault();
-                var wayb = way != null && way.IsValid() ? target.DistanceToPlayer() < way.DistanceToPlayer() : false;
-                var dist = target.HaveImmovableBuff() ?
-                                                       310f : (target.IsFacing(myhero) ?
-                                                                                (target.IsMoving || wayb ? 320f + 0.60f * target.MoveSpeed : 340f) : (target.IsMoving ? 230f - 0.60f * target.MoveSpeed : 260f));
-
-
-
-                //Drawing.DrawCircle(!test ? target.Position.Extend(myhero.Position, dist) : target.Position.Shorten(myhero.Position, dist), 375, Color.Yellow);
-                //Drawing.DrawCircle(test ? target.Position.Extend(myhero.Position, 310) : target.Position.Shorten(myhero.Position, 310), 375, Color.Yellow);
-                Drawing.DrawCircle(target.Position.Extend(myhero.Position, dist), 375, Color.Yellow);
-                //Drawing.DrawCircle(myhero.Position, E.Range + 385, Color.Yellow);
-            }
         }
         #endregion
 
@@ -273,15 +257,10 @@ namespace T7Veigar
                         case 0:
                             var pred1 = SPrediction.Prediction.GetFastUnitPosition(target, 0.75f);
                             if (E.IsInRange(pred1)) E.Cast(pred1);
-                            else if (pred1.DistanceToPlayer() > E.Range && pred1.DistanceToPlayer() < E.Range + 370f) E.Cast(myhero.Position.Extend(target.Position, 370f));
+                            //else if (pred1.DistanceToPlayer() > E.Range && pred1.DistanceToPlayer() < E.Range + 370f) E.Cast(myhero.Position.Extend(target.Position, 370f));
                             break;
                         case 1:
-                            //if (Epred.CastPosition.Distance(myhero.Position) < E.Range - 5)
-                            //{
-                            //    var way = target.GetWaypoints().LastOrDefault();
-                            //    var test = way.IsValid() && way.DistanceToPlayer() < target.DistanceToPlayer() && target.IsFacing(myhero);
 
-                            //}
                             var way = target.GetWaypoints().LastOrDefault();
                             var wayb = way != null && way.IsValid() ? target.DistanceToPlayer() < way.DistanceToPlayer() : false;
                             var dist = target.HaveImmovableBuff() ?
@@ -290,18 +269,6 @@ namespace T7Veigar
                             var spot = target.Position.Extend(myhero.Position, dist);
 
                             if (E.IsInRange(spot)) E.Cast(spot);
-                            //var dist = 310;
-                            //if (!target.IsFacing(myhero))
-                            //{
-                            //    E.Cast(target.Position.Extend(myhero.Position, dist));
-                            //    //E.Cast(Epred.CastPosition.Extend(myhero.Position, target.IsMoving ? 200 : 190));
-                            //}
-                            //else
-                            //{
-
-                            //    E.Cast(target.Position.Shorten(myhero.Position, dist));
-                            //    //E.Cast(Epred.CastPosition.ToVector3World().Shorten(myhero.Position, target.IsMoving ? 200 : 190));
-                            //}
                             break;
                         case 2:
                             var pred = E.GetAoeSPrediction();
@@ -725,32 +692,6 @@ namespace T7Veigar
                         }
                         else if (collisions.Count() < 2)
                             besttarget = minion;
-
-                        //switch (comb(laneclear, "QSTACKMODE"))
-                        //{
-                        //    case 0:
-                        //        if (Qpred.Hitchance >= HitChance.Medium && collisions.Count() <= 1)
-                        //        {
-                        //            Q.Cast(Qpred.CastPosition);
-                        //        }
-                        //        else
-                        //        {
-                        //            Q.Cast(Qpred.CastPosition);
-                        //        }
-                        //        break;
-                        //    case 1:
-                        //        if (collisions.Count() == 1 &&
-                        //            collisions.FirstOrDefault().Health < QDamage(collisions.FirstOrDefault()) - 10)
-                        //        {
-                        //            Q.Cast(Qpred.CastPosition);
-                        //        }
-                        //        else if (collisions.Count() == 2 && collisions[0].Health < QDamage(collisions[0]) - 10 &&
-                        //                                           collisions[1].Health < QDamage(collisions[1]) - 10)
-                        //        {
-                        //            Q.Cast(Qpred.CastPosition);
-                        //        }
-                        //        break;
-                        //}
                     }
 
                     if (besttarget != null && Q.CanCast(besttarget) && Q.GetHealthPrediction(besttarget) > 10)
@@ -821,27 +762,6 @@ namespace T7Veigar
         {
             return sig2 == null ? menu[sig].GetValue<MenuBool>().Enabled : menu[sig][sig2].GetValue<MenuBool>().Enabled;
         }
-        //public static bool CastOnAOELocation(this Spell.Skillshot spell, bool JungleMode = false)
-        //{
-        //    var targets = JungleMode ? EntityManager.MinionsAndMonsters.GetJungleMonsters(Program.myhero.Position, (float)Q.Range).ToArray<Obj_AI_Base>() :
-        //                                EntityManager.MinionsAndMonsters.GetLaneMinions(EntityManager.UnitTeam.Enemy, Program.myhero.Position, (float)Q.Range).ToArray<Obj_AI_Base>();
-
-        //    var AOE = new SPrediction.Prediction. Prediction.Position.GetPredictionAoe(targets, new Prediction.Position.PredictionData(
-        //                                        Prediction.Position.PredictionData.PredictionType.Circular,
-        //                                        (int)spell.Range,
-        //                                        spell.Width,
-        //                                        0,
-        //                                        spell.CastDelay,
-        //                                        spell.Speed,
-        //                                        spell.AllowedCollisionCount,
-        //                                        Player.Instance.Position))
-        //                                        .OrderByDescending(x => x.GetCollisionObjects<Obj_AI_Minion>().Count())
-        //                                        .FirstOrDefault();
-
-        //    if (AOE != null && spell.Cast(AOE.CastPosition)) return true;
-
-        //    return false;
-        //}
 
         public static bool ValidTarget(this AIHeroClient hero, int range)
         {
