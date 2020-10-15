@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -82,15 +82,14 @@ namespace T7Veigar
         private static void OnTick(EventArgs args)
         {
             if (myhero.IsDead) return;
-
-            if (Orbwalker.ActiveMode == OrbwalkerMode.Combo) Combo();
+            
+            if (Orbwalker.ActiveMode == OrbwalkerMode.Combo) Combo();            
 
             if (Orbwalker.ActiveMode == OrbwalkerMode.Harass || key(harass, "AUTOH") && myhero.ManaPercent > slider(harass, "HMIN")) Harass();
 
             if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear /*|| laneclear.check("AUTOL")*/) Clear();
 
             if (key(laneclear, "QSTACK") && slider(laneclear, "LMIN") <= myhero.ManaPercent) QStack();
-
             Misc();
         }
 
@@ -245,8 +244,8 @@ namespace T7Veigar
                 var way = target.GetWaypoints().LastOrDefault();
                 var wayb = way != null && way.IsValid() ? target.DistanceToPlayer() < way.DistanceToPlayer() : false;
                 var dist = target.HaveImmovableBuff() ?
-                                           310f : (target.IsFacing(myhero) ?
-                                                                    (target.IsMoving || wayb ? 320f + 0.15f * target.MoveSpeed : 340f) : (target.IsMoving ? 230f - 0.15f * target.MoveSpeed : 230f));
+                                                       310f : (target.IsFacing(myhero) ?
+                                                                                (target.IsMoving || wayb ? 320f + 0.60f * target.MoveSpeed : 340f) : (target.IsMoving ? 230f - 0.60f * target.MoveSpeed : 260f));
 
 
 
@@ -272,7 +271,9 @@ namespace T7Veigar
                     switch (comb(combo, "CEMODE"))
                     {
                         case 0:
-                            if (Epred.HitChance >= hitE) E.Cast(Epred.CastPosition);
+                            var pred1 = SPrediction.Prediction.GetFastUnitPosition(target, 0.75f);
+                            if (E.IsInRange(pred1)) E.Cast(pred1);
+                            else if (pred1.DistanceToPlayer() > E.Range && pred1.DistanceToPlayer() < E.Range + 370f) E.Cast(myhero.Position.Extend(target.Position, 370f));
                             break;
                         case 1:
                             //if (Epred.CastPosition.Distance(myhero.Position) < E.Range - 5)
@@ -285,7 +286,7 @@ namespace T7Veigar
                             var wayb = way != null && way.IsValid() ? target.DistanceToPlayer() < way.DistanceToPlayer() : false;
                             var dist = target.HaveImmovableBuff() ?
                                                        310f : (target.IsFacing(myhero) ?
-                                                                                (target.IsMoving || wayb ? 320f + 0.30f * target.MoveSpeed : 340f) : (target.IsMoving ? 230f - 0.30f * target.MoveSpeed : 260f));
+                                                                                (target.IsMoving || wayb ? 320f + 0.60f * target.MoveSpeed : 340f) : (target.IsMoving ? 230f - 0.60f * target.MoveSpeed : 260f));
                             var spot = target.Position.Extend(myhero.Position, dist);
 
                             if (E.IsInRange(spot)) E.Cast(spot);
@@ -310,6 +311,8 @@ namespace T7Veigar
                         break;             
                     }                                       
                 }
+
+                
 
                 if (Q.CanCast(target) && combo.check("CQ"))
                 {
@@ -572,7 +575,7 @@ namespace T7Veigar
                 combo.Add(new MenuBool("IgniteC", "Use Ignite", false));
             combo.Add(new MenuSeparator("8942938", "|"));
             combo.Add(new MenuList("CWMODE", "Select W Mode:", new string[] { "With Prediciton", "Without Prediction", "Only On Stunned Enemies" }, 0));
-            combo.Add(new MenuList("CEMODE", "Select E Mode: ", new string[] { "Target On The Center", "Target On The Edge(stun)", "AOE" }, 1));
+            combo.Add(new MenuList("CEMODE", "Select E Mode: ", new string[] { "Target On The Center", "Target On The Edge(stun)", "AOE" }, 0));
             combo.Add(new MenuSlider("CEAOE", "Min Champs For AOE Function", 2, 1, 5));
             combo.Add(new MenuBool("EIMMO", "Dont Use E On Immobile Enemies", false));
             menu.Add(combo);
@@ -757,7 +760,9 @@ namespace T7Veigar
                 }
                 else
                 {
-                    Q.Cast(Q.GetLineFarmLocation(minions.ToList()).Position);
+                    var pred = Q.GetLineFarmLocation(minions.ToList());
+
+                    if (pred.MinionsHit > 0) Q.Cast(pred.Position);
                 }                
             }
         }
@@ -765,7 +770,7 @@ namespace T7Veigar
         private static float QDamage(AIBaseClient target)
         {
             var index = Q.Level - 1;
-
+            
             if (Q.State != SpellState.Ready) return 0f;
 
             var QDamage = new[] { 80, 120, 160, 200, 240 }[index] +
