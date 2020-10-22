@@ -21,7 +21,7 @@ namespace T7Veigar
         #region Declarations
         static void Main(string[] args) { GameEvent.OnGameLoad += OnLoad; }
         public static AIHeroClient myhero { get { return ObjectManager.Player; } }
-        private static Menu menu, combo, harass, laneclear, jungleclear, misc, draw, pred , farm;
+        private static Menu menu, combo, harass, laneclear, jungleclear, misc, draw, pred , farm, lasthit;
         static HitChance hitQ, hitW, hitE;
 
         public static Spell Ignite { get; private set; }
@@ -88,6 +88,8 @@ namespace T7Veigar
             if (Orbwalker.ActiveMode == OrbwalkerMode.Harass || key(harass, "AUTOH") && myhero.ManaPercent > slider(harass, "HMIN")) Harass();
 
             if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear /*|| laneclear.check("AUTOL")*/) Clear();
+
+            if (Orbwalker.ActiveMode == OrbwalkerMode.LastHit) Lasthit();
 
             if (key(laneclear, "QSTACK") && slider(laneclear, "LMIN") <= myhero.ManaPercent) QStack();
             Misc();
@@ -257,10 +259,9 @@ namespace T7Veigar
                         case 0:
                             var pred1 = SPrediction.Prediction.GetFastUnitPosition(target, 0.75f);
                             if (E.IsInRange(pred1)) E.Cast(pred1);
-                            //else if (pred1.DistanceToPlayer() > E.Range && pred1.DistanceToPlayer() < E.Range + 370f) E.Cast(myhero.Position.Extend(target.Position, 370f));
+                            else if (pred1.DistanceToPlayer() > E.Range && pred1.DistanceToPlayer() < E.Range + 370f) E.Cast(myhero.Position.Extend(target.Position, 370f));
                             break;
                         case 1:
-
                             var way = target.GetWaypoints().LastOrDefault();
                             var wayb = way != null && way.IsValid() ? target.DistanceToPlayer() < way.DistanceToPlayer() : false;
                             var dist = target.HaveImmovableBuff() ?
@@ -459,10 +460,56 @@ namespace T7Veigar
             }
         }
 
+        static void Lasthit()
+        {
+            if (!Q.IsReady() || !lasthit.check("LHQ")) return;
+
+            var minions = GameObjects.EnemyMinions.Where(x => x.IsValidTarget(Q.Range - 10) && x.IsMinion());//.OrderByDescending(x => x.Health);
+
+            if (minions != null)
+            {
+                AIMinionClient besttarget = null;
+                foreach (var minion in minions.Where(x => !x.IsDead && x.Health < QDamage(x) - 10 && Q.GetHealthPrediction(x) > 10))
+                {
+                    var Qpred = Q.GetPrediction(minion);
+
+                    var collisions = Qpred.CollisionObjects.ToList();
+
+                    if (collisions.Count() > 0 && !lasthit.check("LHQD")) break;
+
+                    else if (collisions.Count() <= 1 && minion.GetMinionType() == MinionTypes.Siege)
+                    {
+                        besttarget = minion;
+                        break;
+                    }
+                    else if (collisions.Count() == 1 && collisions[0].Health < QDamage(collisions[0]) - 10 && Q.GetHealthPrediction(collisions[0]) > 0 &&
+                            !(minion.GetMinionType() == MinionTypes.Siege && HealthPrediction.GetPrediction(minion, (int)(Q.CooldownTime * 1100)) <= 0))
+                    {
+                        besttarget = minion;
+                        break;
+                    }
+                    else if (collisions.Count() > 1 && collisions[0].Health < QDamage(collisions[0]) - 10 && collisions[1].Health < QDamage(collisions[1]) - 10
+                                                    && Q.GetHealthPrediction(collisions[0]) > 0 && Q.GetHealthPrediction(collisions[1]) > 0)
+                    {
+                        besttarget = minion;
+                        break;
+                    }
+                    else if (collisions.Count() < 2)
+                        besttarget = minion;
+                }
+
+                if (besttarget != null && Q.CanCast(besttarget) && Q.GetHealthPrediction(besttarget) > 10)
+                {
+                    //if (HealthPrediction.HasTurretAggro(besttarget) && )
+                    Q.Cast(Q.GetPrediction(besttarget).CastPosition);
+                }
+            }
+        }
+
         private static void Misc()
         {
 
-            if (misc.check("KSR"))
+            if (misc.check("KSR") && R.IsReady())
             {
                 foreach (var hero in GameObjects.EnemyHeroes.Where(x => x.Health < myhero.GetSpellDamage(x, SpellSlot.R) && R.CanCast(x) && !x.HaveSpellShield()).OrderByDescending(x => x.ChampionsKilled))
                 {
@@ -500,7 +547,7 @@ namespace T7Veigar
 
             if (misc.check("KSJ") && W.IsReady() && GameObjects.JungleLegendary.Any())
             {
-                var lmob = GameObjects.JungleLegendary.Where(x => x.IsValidTarget(W.Range) && W.GetHealthPrediction(x) > 0 && myhero.GetSpellDamage(x, SpellSlot.W) > HealthPrediction.GetPrediction(x, 1000)).FirstOrDefault();
+                var lmob = GameObjects.JungleLegendary.Where(x => x.IsValidTarget(W.Range) && HealthPrediction.GetPrediction(x, 1000) > 0 && myhero.GetSpellDamage(x, SpellSlot.W) > HealthPrediction.GetPrediction(x, 1000)).FirstOrDefault();
 
                 if (lmob != null && W.IsInRange(lmob.Position)) W.Cast(lmob.Position);               
             }
@@ -528,6 +575,7 @@ namespace T7Veigar
             farm = new Menu("farmm", "Farm");
             laneclear = new Menu("lclear", "Laneclear");
             jungleclear = new Menu("jclear", "Jungleclear");
+            lasthit = new Menu("lasthit", "Lasthit");
             misc = new Menu("misc", "Misc");
             draw = new Menu("draww", "Drawings");
             pred = new Menu("predi", "Prediction");
@@ -558,6 +606,8 @@ namespace T7Veigar
             laneclear.Add(new MenuSeparator("89283563453", "Auto Q Stacking"));
             laneclear.Add(new MenuKeyBind("QSTACK", "Auto Stacking", Keys.J, KeyBindType.Toggle)).Permashow(true, null, SharpDX.Color.LightGreen);
             laneclear.Add(new MenuList("QSTACKMODE", "Select Mode", new string[] { "LastHit Only", "Spam Q" }, 0));
+            laneclear.Add(new MenuBool("QSTACKDOUBLE", "Q Through Other Minions"));
+            laneclear.Add(new MenuSeparator("4225390234", " "));
             laneclear.Add(new MenuSeparator("4214313453", "Laneclear Settings"));
             laneclear.Add(new MenuBool("LQ", "Use Q"));                  
             laneclear.Add(new MenuBool("LW", "Use W", false));
@@ -566,11 +616,15 @@ namespace T7Veigar
             laneclear.Add(new MenuSlider("LMIN", "Min Mana % To Laneclear/AutoStack", 50, 0, 100));
             menu.Add(laneclear);
 
-            jungleclear.Add(new MenuBool("JQ", "Use Q", false));
+            jungleclear.Add(new MenuBool("JQ", "Use Q"));
             jungleclear.Add(new MenuList("JQMODE", "Q Mode", new string[] { "All Monsters", "Big Monsters" }, 0));
             jungleclear.Add(new MenuBool("JW", "Use W", false));
             jungleclear.Add(new MenuSlider("JMIN", "Min Mana % To Jungleclear", 10, 0, 100));
             menu.Add(jungleclear);
+
+            lasthit.Add(new MenuBool("LHQ", "Use Q"));
+            lasthit.Add(new MenuBool("LHQD", "Q Through Other Minions"));
+            menu.Add(lasthit);
 
             draw.Add(new MenuBool("nodraw", "Disable All Drawings", false));
             draw.Add(new MenuBool("drawQ", "Draw Q Range"));
@@ -620,21 +674,6 @@ namespace T7Veigar
 
             menu.Add(new MenuSlider("skinID", "Skin Hack", 9,0,31)).ValueChanged += (s, e) => myhero.SetSkin(slider(menu, "skinID"));
 
-            //menu.Add(new MenuList("skinID", "Skin Hack", new string[]
-            //{
-            //        "Off",
-            //        "White Mage",
-            //        "Curling",
-            //        "Veigar Greybeard",
-            //        "Leprechaun",
-            //        "Baron Von",
-            //        "Superb Villain",
-            //        "Bad Santa",
-            //        "Final Boss",
-            //        " ",
-            //        " "
-            //}, 8)).ValueChanged += (s, e) => myhero.SetSkin(comb(menu, "skinID"));
-
             menu.Attach();
         }
         #endregion
@@ -674,7 +713,9 @@ namespace T7Veigar
 
                         var collisions = Qpred.CollisionObjects.ToList();
 
-                        if (collisions.Count() <= 1 && minion.GetMinionType() == MinionTypes.Siege)
+                        if (collisions.Count() > 0 && !laneclear.check("QSTACKDOUBLE")) break; 
+
+                        else if (collisions.Count() <= 1 && minion.GetMinionType() == MinionTypes.Siege)
                         {
                             besttarget = minion;
                             break;
@@ -728,17 +769,6 @@ namespace T7Veigar
 
             return (float)myhero.CalculateMagicDamage(target, WDamage);
         }
-
-        //private static float RDamage(AIHeroClient target)
-        //{
-        //    var index = R.Level - 1;
-
-        //    var basedamage = new float[] { 175, 250, 325 }[index] + 0.75 * myhero.FlatMagicDamageMod;
-
-        //    var extradmg = target.HealthPercent < 34f ? (new float[] { 175f, 250f, 325f }[index] * 2) + (1.5f * myhero.FlatMagicDamageMod) : (((100f - target.HealthPercent) * 1.5) / 100) * new float[] { 175, 250, 325 }[index]; //
-
-        //    return (float)myhero.CalculateMagicDamage(target, basedamage + extradmg);
-        //}
 
         public static int comb(Menu submenu, string sig)
         {
