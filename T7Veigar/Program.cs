@@ -805,5 +805,35 @@ namespace T7Veigar
         {
             return source - distance * (to - source).Normalized();
         }
+        
+        public static float GetRealHealth(this AIBaseClient unit, DamageType type)
+        {
+            var health = unit.Health;
+
+            if (unit.Type != GameObjectType.AIHeroClient)
+            {
+                return health;
+            }
+
+            switch (type)
+            {
+                case DamageType.Magical:
+                    health += unit.MagicalShield;
+                    break;
+                case DamageType.Physical:
+                    health += unit.PhysicalShield;
+                    break;
+                case DamageType.Mixed:
+                    health += unit.PhysicalShield + unit.MagicalShield;
+                    break;
+            }
+
+            if (unit.CharacterName == "Blitzcrank" && !unit.HasBuff("manabarriercooldown"))
+            {
+                health += unit.MaxMana * 0.3f;
+            }
+
+            return health + unit.AllShield;
+        }
     }
 }
