@@ -320,8 +320,8 @@ namespace T7Veigar
                 }
 
                 if (combo.check("CR") && R.IsReady() &&
-                    R.IsInRange(target.Position) && (ComboDamage(target) > target.Health ||
-                    myhero.GetSpellDamage(target, SpellSlot.R) > target.Health) && /*!target.HasBuff("bansheesveil") &&*/ !target.HasBuff("SamiraW") && !target.HaveSpellShield())
+                    R.IsInRange(target.Position) && (ComboDamage(target) > target.GetRealHealth(DamageType.Magical) ||
+                    myhero.GetSpellDamage(target, SpellSlot.R) > target.GetRealHealth(DamageType.Magical)) && /*!target.HasBuff("bansheesveil") &&*/ !target.HasBuff("SamiraW") && !target.HaveSpellShield())
                 {
                     if ((ComboDamage(target) - myhero.GetSpellDamage(target, SpellSlot.R)) > target.Health) return;
                     R.Cast(target);
@@ -511,7 +511,7 @@ namespace T7Veigar
 
             if (misc.check("KSR") && R.IsReady())
             {
-                foreach (var hero in GameObjects.EnemyHeroes.Where(x => x.Health < myhero.GetSpellDamage(x, SpellSlot.R) && R.CanCast(x) && !x.HaveSpellShield()).OrderByDescending(x => x.ChampionsKilled))
+                foreach (var hero in GameObjects.EnemyHeroes.Where(x => x.GetRealHealth(DamageType.Magical) < myhero.GetSpellDamage(x, SpellSlot.R) && R.CanCast(x) && !x.HaveSpellShield()).OrderByDescending(x => x.ChampionsKilled))
                 {
                     if (hero != null) R.Cast(hero);
                 }
