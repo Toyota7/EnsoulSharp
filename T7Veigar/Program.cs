@@ -95,7 +95,7 @@ namespace T7Veigar
             Misc();
         }
 
-        private static void OnEndScene(EventArgs args)
+        private static void OnEndScene(EventArgs args)// credits babazhou
         {
             if (!draw.check("drawk") || draw.check("nodraw") || myhero.IsDead) return;
 
