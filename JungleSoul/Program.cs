@@ -50,7 +50,7 @@ namespace JungleSoul
         static List<float> redtimers = new List<float> { 0f, 0f, 0f, 0f, 0f, 0f };
         static List<float> crabtimers = new List<float> { 0f, 0f };
         static List<int> minimobcounters = new List<int> { 0, 0, 0, 0, 0, 0 }; // blue wolves,raptors,krugs / red -//-
-        static float brespawntime = 296f, arespawntime = 117f, crabrespawntime = 146f; //in seconds , reb/blue respawn is 300, other mobs(not crab) is 120 , - 4 seconds from delay in ondelete
+        static float brespawntime = 296.5f, arespawntime = 117f, crabrespawntime = 146f; //in seconds , reb/blue respawn is 300, other mobs(not crab) is 120 , - 4 seconds from delay in ondelete
         static GameObjectTeam myteam = myhero.Team;
 
         static void Main(string[] args)
@@ -172,7 +172,7 @@ namespace JungleSoul
                     if (minimobcounters[2] == 10)
                     {
                         bluejungle[5] = false;
-                        bluetimers[5] = Game.Time + arespawntime;
+                        bluetimers[5] = Game.Time + arespawntime -3f;
                         minimobcounters[2] = 0;
                     }
                 }
@@ -182,7 +182,7 @@ namespace JungleSoul
                     if (minimobcounters[5] == 10)
                     {
                         redjungle[5] = false;
-                        redtimers[5] = Game.Time + arespawntime;
+                        redtimers[5] = Game.Time + arespawntime -3f;
                         minimobcounters[5] = 0;
                     }
                 }
