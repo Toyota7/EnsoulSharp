@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using EnsoulSharp;
 using EnsoulSharp.SDK;
-using EnsoulSharp.SDK.Events;
 using EnsoulSharp.SDK.MenuUI;
 using EnsoulSharp.SDK.MenuUI.Values;
-using EnsoulSharp.SDK.Prediction;
-using EnsoulSharp.SDK.Utility;
 using SharpDX;
 using SharpDX.Direct3D9;
 using Color = System.Drawing.Color;
@@ -78,7 +75,7 @@ namespace JungleSoul
 
         private static void GameObject_OnDelete(GameObject sender, EventArgs args)
         {
-            if ((!sender.Name.ToLower().Contains("sru") && !sender.Name.Contains("MiniKrug"))|| sender.Type != GameObjectType.AIMinionClient) return;
+            if ((!sender.Name.ToLower().Contains("sru") && !sender.Name.Contains("MiniKrug")) || sender.Type != GameObjectType.AIMinionClient) return;
 
             if (sender.Name.Contains("Gromp") && subm.check("SGROMP"))
             {
@@ -250,7 +247,7 @@ namespace JungleSoul
                     for (int i = 0; i < 6; i++)
                     {
 
-                        if (bluetimers[i] == 0f) continue;
+                        if (bluetimers[i] == 0f || !subm.check("S"+mobnames[i].ToUpper())) continue;
 
                         var span = TimeSpan.FromSeconds(bluetimers[i] - Game.Time);
                         var timestr = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);
@@ -263,7 +260,7 @@ namespace JungleSoul
                 {
                     for (int i = 0; i < 6; i++)
                     {
-                        if (redtimers[i] == 0f) continue;
+                        if (redtimers[i] == 0f || !subm.check("S" + mobnames[i].ToUpper())) continue;
 
                         var span = TimeSpan.FromSeconds(redtimers[i] - Game.Time);
                         var timestr = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);
@@ -292,7 +289,7 @@ namespace JungleSoul
                 {
                     for (int i = 0; i < 6; i++)
                     {
-                        if (bluetimers[i] == 0f) continue;
+                        if (bluetimers[i] == 0f || !subm.check("S" + mobnames[i].ToUpper())) continue;
 
                         var span = TimeSpan.FromSeconds(bluetimers[i] - Game.Time);
                         var timestr = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);
@@ -306,7 +303,7 @@ namespace JungleSoul
                 {
                     for (int i = 0; i < 6; i++)
                     {
-                        if (redtimers[i] == 0f) continue;
+                        if (redtimers[i] == 0f || !subm.check("S" + mobnames[i].ToUpper())) continue;
 
                         var span = TimeSpan.FromSeconds(redtimers[i] - Game.Time);
                         var timestr = string.Format("{0}:{1:00}", (int)span.TotalMinutes, span.Seconds);
