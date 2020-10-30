@@ -69,7 +69,7 @@ namespace JungleSoul
             UpdateFont();
             LoadMenu();
 
-            Game.OnUpdate += OnTick;
+            Game.OnUpdate += CheckTimers;
             Drawing.OnEndScene += OnDraw;
             GameObject.OnDelete += GameObject_OnDelete;
 
@@ -205,7 +205,7 @@ namespace JungleSoul
             }
         }
 
-        static void CheckTimers()
+        static void CheckTimers(EventArgs args)
         {
             for (int i = 0; i < 6; i++)
             {
@@ -332,11 +332,6 @@ namespace JungleSoul
             }
         }
 
-        static void OnTick(EventArgs args)
-        {
-            CheckTimers();
-        }
-
         static void LoadMenu()
         {
             menu = new Menu("mainm", "JungleSoul", true);
@@ -356,7 +351,6 @@ namespace JungleSoul
             menu.Add(new MenuSeparator("74289347289", "By Toyota7"));
             menu.Add(new MenuBool("MMTIMERS", "Draw Timers On Minimap"));
             menu.Add(new MenuBool("MTIMERS", "Draw Timers On Map"));
-            //menu.Add(new MenuBool("PING", "Ping When Mobs Die In FOW"));
             menu.Add(subm);
             menu.Add(new MenuSlider("FONTSIZE", "Minimap Timers Font Size", 20, 10, 30)).ValueChanged += (s, e) => { FontSize = slider(menu, "FONTSIZE"); UpdateFont(); };
             menu.Add(new MenuSlider("FONTSIZE2", "Map Timers Font Size", 20, 10, 40)).ValueChanged += (s, e) => { FontSize2 = slider(menu, "FONTSIZE2"); UpdateFont(); };
