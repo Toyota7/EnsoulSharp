@@ -23,11 +23,8 @@ namespace JungleSoul
         static int FontSize, FontSize2;
         static ColorBGRA FontColor, FontColor2;
         static Color CircleColor;
-
         static Menu menu, subm;
-
-        //static Render.Sprite dot = new Render.Sprite(System.Drawing.Bitmap.FromFile("dot.bmp"), spritepos);
-
+        
         static Vector2 mgromppos = new Vector2(2024, 8406),
                 mbluepos = new Vector2(3788, 7962),
                 mwolfpos = new Vector2(3916, 6452),
@@ -58,8 +55,6 @@ namespace JungleSoul
         static List<int> minimobcounters = new List<int> { 0, 0, 0, 0, 0, 0 }; // blue wolves,raptors,krugs / red -//-
         static float brespawntime = 296f, arespawntime = 117f, crabrespawntime = 146f; //in seconds , reb/blue respawn is 300, other mobs(not crab) is 120 , - 4 seconds from delay in ondelete
         static GameObjectTeam myteam = myhero.Team;
-       
-        
 
         static void Main(string[] args)
         {
@@ -71,20 +66,13 @@ namespace JungleSoul
             if (Game.MapId != GameMapId.SummonersRift) return;
 
             FontSize = 20;
-            //FontColor = ColorBGRA.FromRgba(Color.White.ToRgba());
-            //if (!GameObjects.EnemyHeroes.Any(x => x.CharacterName == "Cassiopeia" || x.CharacterName == "Tryndamere")) return;
             UpdateFont();
-
-
             LoadMenu();
 
-            //Tick.OnTick += OnTick;
             Game.OnUpdate += OnTick;
             Drawing.OnEndScene += OnDraw;
-            //GameObject.OnCreate += GameObject_OnCreate;
             GameObject.OnDelete += GameObject_OnDelete;
 
-            //dot.Add();
             Console.WriteLine("JungleSoul loaded");
         }
 
@@ -215,29 +203,8 @@ namespace JungleSoul
                     crabtimers[1] = Game.Time + crabrespawntime;
                 }
             }
-
-            if (menu.check("PING") && sender.Name.Contains("Razorbeak") || sender.Name.Contains("Red") || sender.Name.Contains("Krug") || sender.Name.Contains("Murkwolf") || sender.Name.Contains("Blue") || sender.Name.Contains("Gromp") /*|| sender.Name.Contains("Camp")*/ || sender.Name.Contains("Crab"))
-            {
-                if (sender.Position.CountAllyHeroesInRange(1000) > 0 || sender.Name .Contains("Mini")) return;
-                Game.Print(sender.Name + " " + sender.Type + " " + Game.Time.ToString());
-                Game.SendPing(PingCategory.Normal, sender.Position);
-            }
         }
 
-        //private static void GameObject_OnCreate(GameObject sender, EventArgs args)
-        //{
-        //    if (sender.Name == "CampRespawn")
-        //    {
-        //        //var team = myjunglepos.Any(x => x.Distance(sender.Position) < 400) ? "Ally" : "Enemy"; 
-        //        Game.SendPing(PingCategory.Normal, sender.Position);
-        //        Game.Print(sender.Name + " " + sender.Type + " " + Game.Time.ToString());
-        //    }
-        //    //var mob = GameObjects.Jungle.FirstOrDefault(x => x.NetworkId == sender.NetworkId);
-        //    //if (mob != null) Game.Print(true);
-        //    //if (!sender.Name.Contains("SRU") || sender.Name.Contains("Shop") || sender.Name.Contains("Lux") || sender.Name.Contains("Nexus") || sender.Name.Contains("ping") || sender.Name.Contains("sound") || sender.Name.Contains("Crab")) return;
-        //    //Game.Print(sender.Name + " " + sender.Type);
-        //    //Game.SendPing(PingCategory.Normal, sender.Position);
-        //}
         static void CheckTimers()
         {
             for (int i = 0; i < 6; i++)
@@ -268,41 +235,14 @@ namespace JungleSoul
                     crabs[i] = true;
                     crabtimers[i] = 0f;
                 }
-            }
-            
+            }     
         }
 
         private static void OnDraw(EventArgs args)
         {
-            var minions = GameObjects.EnemyMinions.Where(x => x.IsVisibleOnScreen);
-
-            var mobs = GameObjects.Jungle.Where(x => x.IsVisibleOnScreen);
-
-            var lMobs = GameObjects.Jungle.Where(x => x.IsVisibleOnScreen && x.GetJungleType() == JungleType.Legendary);
-
-            var bMobs = GameObjects.Jungle.Where(x => x.IsVisibleOnScreen && x.GetJungleType() == JungleType.Large);
-
-            IEnumerable<AIMinionClient> targets;
-
-            if (minions.Any()) targets = minions;
-            else if (lMobs.Any()) targets = lMobs;
-            else if (bMobs.Any()) targets = bMobs;
-            else targets = mobs;
-
-            if (targets.Any())
-            {
-                targets.ToList().Where(x => !x.IsDead).ForEach(x =>
-                {
-                    Drawing.DrawText(Drawing.WorldToScreen(x.Position), Color.Red, x.Name);
-                });
-            }
-
             FontColor = m_getcolor(menu, "FONTCOLOR");
             FontColor2 = m_getcolor(menu, "FONTCOLOR2");
-            //CircleColor = m_getcolor(menu, "STATUSCOLOR").ToSystemColor();
 
-            //for (int i = 0; i < 6; i++)
-            //    MiniMap.DrawCircle(bluejunglepos[i].ToVector3(), 220, bluejungle[i] ? CircleColor : Color.Transparent, 3);
             if (menu.check("MMTIMERS"))
             {
                 if (subm.check("BTT"))
@@ -390,14 +330,6 @@ namespace JungleSoul
                     }
                 }
             }
-
-            Drawing.DrawText(Drawing.WorldToScreen(Game.CursorPos), Color.Red, myhero.Position.ToString());
-
-            for (int i = 0; i < myhero.Buffs.Count(); i++)
-            {
-                var buff = myhero.Buffs.ToArray()[i];
-                Drawing.DrawText(Drawing.WorldToScreen(Game.CursorPos).X, Drawing.WorldToScreen(Game.CursorPos).Y + (14 * i) + 60, Color.Red, buff.Name + " " + buff.Count);
-            }
         }
 
         static void OnTick(EventArgs args)
@@ -424,7 +356,7 @@ namespace JungleSoul
             menu.Add(new MenuSeparator("74289347289", "By Toyota7"));
             menu.Add(new MenuBool("MMTIMERS", "Draw Timers On Minimap"));
             menu.Add(new MenuBool("MTIMERS", "Draw Timers On Map"));
-            menu.Add(new MenuBool("PING", "Ping When Mobs Die In FOW"));
+            //menu.Add(new MenuBool("PING", "Ping When Mobs Die In FOW"));
             menu.Add(subm);
             menu.Add(new MenuSlider("FONTSIZE", "Minimap Timers Font Size", 20, 10, 30)).ValueChanged += (s, e) => { FontSize = slider(menu, "FONTSIZE"); UpdateFont(); };
             menu.Add(new MenuSlider("FONTSIZE2", "Map Timers Font Size", 20, 10, 40)).ValueChanged += (s, e) => { FontSize2 = slider(menu, "FONTSIZE2"); UpdateFont(); };
@@ -440,11 +372,6 @@ namespace JungleSoul
             { FaceName = "Arial", Height = FontSize, Weight = FontWeight.SemiBold, OutputPrecision = FontPrecision.Stroke, Quality = FontQuality.ClearType });
             MapFont = new Font(Drawing.Direct3DDevice, new FontDescription
             { FaceName = "Arial", Height = FontSize2, Weight = FontWeight.SemiBold, OutputPrecision = FontPrecision.Stroke, Quality = FontQuality.ClearType });
-        }
-
-        public static void DrawFontTextScreen(Font vFont, string vText, Vector2 pos, ColorBGRA vColor)// credits oktw
-        {
-            vFont.DrawText(null, vText, (int)pos.X, (int)pos.Y, vColor);
         }
     }
 }
