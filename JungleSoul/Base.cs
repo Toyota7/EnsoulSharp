@@ -25,6 +25,11 @@ namespace JungleSoul
         {
             return submenu[sig].GetValue<MenuColor>();
         }
+        
+        public static void DrawFontTextScreen(Font vFont, string vText, Vector2 pos, ColorBGRA vColor)// credits oktw
+        {
+            vFont.DrawText(null, vText, (int)pos.X, (int)pos.Y, vColor);
+        }
     }
 
     public static class Extensions
