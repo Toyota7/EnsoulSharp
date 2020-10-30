@@ -172,7 +172,7 @@ namespace JungleSoul
                     if (minimobcounters[2] == 10)
                     {
                         bluejungle[5] = false;
-                        bluetimers[5] = Game.Time + arespawntime +3f;
+                        bluetimers[5] = Game.Time + arespawntime +6f;
                         minimobcounters[2] = 0;
                     }
                 }
@@ -182,7 +182,7 @@ namespace JungleSoul
                     if (minimobcounters[5] == 10)
                     {
                         redjungle[5] = false;
-                        redtimers[5] = Game.Time + arespawntime +3f;
+                        redtimers[5] = Game.Time + arespawntime +6f;
                         minimobcounters[5] = 0;
                     }
                 }
