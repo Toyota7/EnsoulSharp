@@ -1,15 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using EnsoulSharp;
 using EnsoulSharp.SDK;
-using EnsoulSharp.SDK.Events;
 using EnsoulSharp.SDK.MenuUI;
-using EnsoulSharp.SDK.MenuUI.Values;
 using EnsoulSharp.SDK.Utility;
 using SharpDX;
-//using Color = System.Drawing.Color;
 
 namespace T7Feeder
 {
@@ -193,6 +190,11 @@ namespace T7Feeder
                 {
                     Name = "Zilean",
                     SpellSlots = new List<SpellSlot>() { SpellSlot.W, SpellSlot.E }
+                },
+            new Ability
+                {
+                    Name = "MasterYi",
+                    SpellSlots = new List<SpellSlot>() { SpellSlot.R }
                 }
         };
 
@@ -213,7 +215,6 @@ namespace T7Feeder
             }
 
             Game.Print("<font color='#0040FF'>T7</font><font color='#09FF00'> Feeder</font> : Loaded!(v1.2)");          
-            Thread.Sleep(15500);
         }
 
         private static void OnEnd()
@@ -223,12 +224,21 @@ namespace T7Feeder
 
         private static void OnTick(EventArgs args)
         {
+            if (Game.Time < 17) return;
+
             Checks();
-            if (menu.check("ABILITIES") && !myhero.IsDead) Abilities();
-            if (menu.check("SPELLS") && menu.check("ACTIVE") && !myhero.IsDead) SummonerSpells();
-            if (comb(menu, "MSGS") != 0) ChatOnDeath();
-            if (menu.check("AUTOBUY") && !FinishedBuild) Shopping();
-            if (menu.check("ACTIVE") && !myhero.IsDead) Feed();
+
+            if (menu.check("ACTIVE"))
+            {               
+                if (!myhero.IsDead)
+                {
+                    if (menu.check("ABILITIES")) Abilities();
+                    if (menu.check("SPELLS")) SummonerSpells();
+                    Feed();
+                }
+                else ChatOnDeath();
+                //if (menu.check("AUTOBUY") && !FinishedBuild) Shopping();
+            }
         }
 
         static int comb(Menu submenu, string sig)
@@ -251,13 +261,13 @@ namespace T7Feeder
         { //best spaghetti ever made
             if (myhero.InShop())
             {               
-                if (!Items.HasItem(myhero, ItemId.Boots_of_Speed) && !Items.HasItem(myhero, ItemId.Boots_of_Mobility) && myhero.Gold >= 300)
-                    myhero.BuyItem(ItemId.Boots_of_Speed);
+                if (!Items.HasItem(myhero, ItemId.Boots) && !Items.HasItem(myhero, ItemId.Mobility_Boots) && myhero.Gold >= 300)
+                    myhero.BuyItem(ItemId.Boots);
 
-                else if (Items.HasItem(myhero, ItemId.Boots_of_Speed) && !Items.HasItem(myhero, ItemId.Boots_of_Mobility) && myhero.Gold >= 700)
-                    myhero.BuyItem(ItemId.Boots_of_Mobility);
+                else if (Items.HasItem(myhero, ItemId.Boots) && !Items.HasItem(myhero, ItemId.Mobility_Boots) && myhero.Gold >= 700)
+                    myhero.BuyItem(ItemId.Mobility_Boots);
 
-                else if (Items.HasItem(myhero, ItemId.Boots_of_Mobility) && !Items.HasItem(myhero, ItemId.Aether_Wisp) && myhero.Gold >= 850)
+                else if (Items.HasItem(myhero, ItemId.Mobility_Boots) && !Items.HasItem(myhero, ItemId.Aether_Wisp) && myhero.Gold >= 850)
                     myhero.BuyItem(ItemId.Aether_Wisp);
 
                 else if (Items.HasItem(myhero, ItemId.Aether_Wisp) && !Items.HasItem(myhero, ItemId.Zeal) && myhero.Gold >= 1400)
@@ -298,7 +308,7 @@ namespace T7Feeder
 
         private static void ChatOnDeath()
         {
-            if (myhero.IsDead && Chatted == false)
+            if (myhero.IsDead && comb(menu, "MSGS") != 0 && Chatted == false)
             {
                 switch (comb(menu, "MSGS"))
                 {
@@ -334,9 +344,9 @@ namespace T7Feeder
 
             foreach (var slot in champ.SpellSlots)
             {
-                if (myhero.Spellbook.GetSpell(slot).IsUpgradable) myhero.Spellbook.LevelSpell(slot);
+                //if (myhero.Spellbook.GetSpell(slot).IsUpgradable) myhero.Spellbook.LevelSpell(slot);
 
-                if (myhero.Spellbook.GetSpell(slot).IsReady) myhero.Spellbook.CastSpell(slot, myhero.Position);
+                if (myhero.Spellbook.GetSpell(slot).State == SpellState.Ready) myhero.Spellbook.CastSpell(slot, myhero.Position);
             }
         }
 
@@ -416,14 +426,13 @@ namespace T7Feeder
             menu = new Menu("feederkappa", "T7 Feeder", true);
 
             menu.Add(new MenuSeparator("sep1", "By Toyota7 v1.2b"));
-            menu.Add(new MenuSeparator("sep2", "|"));
             menu.Add(new MenuBool("ACTIVE", "Active"));
             menu.Add(new MenuList("MODE", "Feed Mode =>", new string[] { "Closest Enemy", "Top", "Mid", "Bot" }, 0));
             menu.Add(new MenuList("MSGS", "Chat On Death =>", new string[] { "Off", "/all Chat", "Team Chat", "Random Chat" }, 0));
             menu.Add(new MenuSlider("CHATDELAY", "Chat Delay After Death(seconds)", 4, 1, 7));
             menu.Add(new MenuBool("SPELLS", "Use Summoner Spells", false));
             menu.Add(new MenuBool("ABILITIES", "Use Abilities"));
-            menu.Add(new MenuBool("AUTOBUY", "Auto Buy Items"));
+            //menu.Add(new MenuBool("AUTOBUY", "Auto Buy Items"));
 
             menu.Attach();
         }
