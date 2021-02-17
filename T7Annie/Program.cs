@@ -2,10 +2,7 @@ using System;
 using System.Linq;
 using EnsoulSharp;
 using EnsoulSharp.SDK;
-using EnsoulSharp.SDK.Events;
 using EnsoulSharp.SDK.MenuUI;
-using EnsoulSharp.SDK.MenuUI.Values;
-using EnsoulSharp.SDK.Prediction;
 using EnsoulSharp.SDK.Utility;
 using SharpDX;
 using Color = System.Drawing.Color;
@@ -39,13 +36,13 @@ namespace T7Annie
             Q = new Spell(SpellSlot.Q, 625f);
             Q.SetTargetted(0.25f, 1392f); //real speed found manually
             W = new Spell(SpellSlot.W, 550f);
-            W.SetSkillshot(0.25f, 50f, 3000f, false, SkillshotType.Cone);
+            W.SetSkillshot(0.25f, 50f, 3000f, false, SpellType.Cone);
             E = new Spell(SpellSlot.E);
             R = new Spell(SpellSlot.R, 600f);
-            R.SetSkillshot(0.25f, 50f, 9999f, false, SkillshotType.Circle);
+            R.SetSkillshot(0.25f, 50f, 9999f, false, SpellType.Circle);
 
             Potion = new Items.Item(ItemId.Health_Potion, 0f);
-            Biscuit = new Items.Item(ItemId.Total_Biscuit_of_Rejuvenation, 0f);
+            Biscuit = new Items.Item(ItemId.Total_Biscuit_of_Everlasting_Will, 0f);
             RPotion = new Items.Item(ItemId.Refillable_Potion, 0f);
             CPotion = new Items.Item(ItemId.Corrupting_Potion, 0f);
 
@@ -58,7 +55,7 @@ namespace T7Annie
 
             Game.OnUpdate += OnUpdate;
             Drawing.OnDraw += OnDraw;
-            Orbwalker.OnAction += OnAction;
+            Orbwalker.OnBeforeAttack += OnBeforeAA;
             AIBaseClient.OnProcessSpellCast += OnProcessSpellCast;
             AIHeroClient.OnAggro += OnAggro;
             AIHeroClient.OnLevelUp += OnLevelUp;
@@ -75,51 +72,54 @@ namespace T7Annie
         {
             if (!sender.IsMe || !menu.check("autol")) return;
 
+            var order = new int[] { 1,2,3,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3 }; 
+
             DelayAction.Add(1, delegate
             {
-                if (myhero.Level > 1 && myhero.Level < 4)
-                {
-                    switch (myhero.Level)
-                    {
-                        case 2:
-                            myhero.Spellbook.LevelSpell(SpellSlot.W);
-                            break;
-                        case 3:
-                            myhero.Spellbook.LevelSpell(SpellSlot.E);
-                            break;
-                    }
-                }
-                else if (myhero.Level >= 4)
-                {
-                    if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.R))
-                    {
-                        myhero.Spellbook.LevelSpell(SpellSlot.R);
-                    }
-                    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.Q))
-                    {
-                        myhero.Spellbook.LevelSpell(SpellSlot.Q);
-                    }
-                    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.W))
-                    {
-                        myhero.Spellbook.LevelSpell(SpellSlot.W);
-                    }
-                    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.E))
-                    {
-                        myhero.Spellbook.LevelSpell(SpellSlot.E);
-                    }
-                }
+                myhero.Spellbook.LevelSpell((SpellSlot)(order[args.Level] - 1));
+                //if (myhero.Level > 1 && myhero.Level < 4)
+                //{
+                //    switch (myhero.Level)
+                //    {
+                //        case 2:
+                //            myhero.Spellbook.LevelSpell(SpellSlot.W);
+                //            break;
+                //        case 3:
+                //            myhero.Spellbook.LevelSpell(SpellSlot.E);
+                //            break;
+                //    }
+                //}
+                //else if (myhero.Level >= 4)
+                //{
+                //    if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.R))
+                //    {
+                //        myhero.Spellbook.LevelSpell(SpellSlot.R);
+                //    }
+                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.Q))
+                //    {
+                //        myhero.Spellbook.LevelSpell(SpellSlot.Q);
+                //    }
+                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.W))
+                //    {
+                //        myhero.Spellbook.LevelSpell(SpellSlot.W);
+                //    }
+                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.E))
+                //    {
+                //        myhero.Spellbook.LevelSpell(SpellSlot.E);
+                //    }
+                //}
             });
         }
 
 
         private static void OnAggro(AIBaseClient sender, AIBaseClientAggroEventArgs args)
         {
-            if (!myhero.IsDead && sender.IsEnemy && !sender.IsMinion && args.TargetId == myhero.NetworkId) gotAggro = true;
+            if (!myhero.IsDead && sender.IsEnemy && !sender.IsMinion() && args.NetworkId == myhero.NetworkId) gotAggro = true;
         }
 
         private static void OnProcessSpellCast(AIBaseClient sender, AIBaseClientProcessSpellCastEventArgs args)
         {
-            if (myhero.IsDead || !sender.IsEnemy || sender.IsMinion) return;
+            if (myhero.IsDead || !sender.IsEnemy || sender.IsMinion()) return;
 
             if (args.Slot == SpellSlot.R)
             {
@@ -129,30 +129,31 @@ namespace T7Annie
                         if (args.End.DistanceToPlayer() < args.SData.CastRadius - 20) E.Cast();
                         break;
                     case SpellDataCastType.Missile:
-                        var pred = new SpellPrediction.PredictionInput();
-                        pred.Type = SkillshotType.Line;
+                        var pred = new PredictionInput();
+                        pred.Type = SpellType.Line;
                         pred.Range = args.SData.CastRange;
                         pred.Speed = args.SData.MissileSpeed;
                         pred.Radius = args.SData.LineWidth;
 
-                        if (SpellPrediction.GetPrediction(pred).CollisionObjects.Contains(myhero)) E.Cast();
+                        if (Prediction.GetPrediction(pred).CollisionObjects.Contains(myhero)) E.Cast();
                         break;
                 }
             }
             else if (args.Target == myhero) E.Cast();
         }
 
-        private static void OnAction(object sender, OrbwalkerActionArgs args)
+        private static void OnBeforeAA(object sender, BeforeAttackEventArgs args)
         {
             var target = TargetSelector.GetTarget(1000f);
-            if (target != null && args.Type == OrbwalkerType.BeforeAttack) 
+
+            if (target != null)
             {
                 if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && (Q.IsReady() || W.IsReady()) && myhero.IsFacing(target) && target.InAARangeOf(myhero)) args.Process = false;
 
                 if (Orbwalker.ActiveMode == OrbwalkerMode.LaneClear && Q.IsReady() && comb(laneclear, "lq") == 2 && myhero.ManaPercent >= slider(laneclear, "manamin")) args.Process = false;
             }
-            
-            if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && combo.check("cnaa") && args.Type == OrbwalkerType.BeforeAttack)
+
+            if (Orbwalker.ActiveMode == OrbwalkerMode.Combo && combo.check("cnaa"))
             {
                 args.Process = false;
             }
@@ -260,7 +261,7 @@ namespace T7Annie
                 {
                     var pred = W.GetPrediction(minion as AIBaseClient);
 
-                    if (pred.CollisionObjects.Where(x => x.IsMinion && !x.IsAlly).Count() >= min)
+                    if (pred.CollisionObjects.Where(x => x.IsMinion() && !x.IsAlly).Count() >= min)
                     {
                         W.Cast(pred.CastPosition);
                     }
@@ -300,7 +301,16 @@ namespace T7Annie
             switch (Orbwalker.ActiveMode)
             {
                 case OrbwalkerMode.Combo:
-                    Combo();
+                    //Combo();
+
+                    //var target = TargetSelector.GetTarget(1000);
+
+                    //if (target != null && !target.IsDead && target.IsMoving)
+                    //{
+                    //    Orbwalker.Move(myhero.Position.Extend(target.Direction, 50));
+                    //    myhero.
+                    //}
+
                     break;
                 case OrbwalkerMode.LaneClear:
                     if (myhero.ManaPercent >= slider(laneclear, "manamin")) Clear();
@@ -311,6 +321,7 @@ namespace T7Annie
             }
 
             Misc();
+            //Game.Print(myhero.Direction);
         }
 
         private static void Misc()
