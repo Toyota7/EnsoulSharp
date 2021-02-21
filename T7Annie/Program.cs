@@ -72,44 +72,31 @@ namespace T7Annie
         {
             if (!sender.IsMe || !menu.check("autol")) return;
 
-            var order = new int[] { 1,2,3,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3 }; 
+            //var order = new int[] { 1,2,3,1,1,4,1,2,1,2,4,2,2,3,3,4,3,3 }; 
 
             DelayAction.Add(1, delegate
-            {
-                myhero.Spellbook.LevelSpell((SpellSlot)(order[args.Level] - 1));
-                //if (myhero.Level > 1 && myhero.Level < 4)
-                //{
-                //    switch (myhero.Level)
-                //    {
-                //        case 2:
-                //            myhero.Spellbook.LevelSpell(SpellSlot.W);
-                //            break;
-                //        case 3:
-                //            myhero.Spellbook.LevelSpell(SpellSlot.E);
-                //            break;
-                //    }
-                //}
-                //else if (myhero.Level >= 4)
-                //{
-                //    if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.R))
-                //    {
-                //        myhero.Spellbook.LevelSpell(SpellSlot.R);
-                //    }
-                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.Q))
-                //    {
-                //        myhero.Spellbook.LevelSpell(SpellSlot.Q);
-                //    }
-                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.W))
-                //    {
-                //        myhero.Spellbook.LevelSpell(SpellSlot.W);
-                //    }
-                //    else if (myhero.Spellbook.CanSpellBeUpgraded(SpellSlot.E))
-                //    {
-                //        myhero.Spellbook.LevelSpell(SpellSlot.E);
-                //    }
-                //}
+            {              
+                //myhero.Spellbook.LevelSpell((SpellSlot)(order[args.Level - 1]));
+
+                if (myhero.Level == 2)
+                {
+                    if (!myhero.GetSpell(SpellSlot.W).Learned) myhero.Spellbook.LevelSpell(SpellSlot.W);
+                    else myhero.Spellbook.LevelSpell(SpellSlot.E);
+                    return;
+                }
+                if (myhero.Level == 3)
+                {
+                    if (!myhero.GetSpell(SpellSlot.E).Learned) myhero.Spellbook.LevelSpell(SpellSlot.E);
+                    else myhero.Spellbook.LevelSpell(SpellSlot.W);
+                    return;
+                }
+
+                myhero.Spellbook.LevelSpell(SpellSlot.R);
+                myhero.Spellbook.LevelSpell(SpellSlot.Q);
+                myhero.Spellbook.LevelSpell(SpellSlot.W);
+                myhero.Spellbook.LevelSpell(SpellSlot.E);
             });
-        }
+            }
 
 
         private static void OnAggro(AIBaseClient sender, AIBaseClientAggroEventArgs args)
@@ -301,16 +288,7 @@ namespace T7Annie
             switch (Orbwalker.ActiveMode)
             {
                 case OrbwalkerMode.Combo:
-                    //Combo();
-
-                    //var target = TargetSelector.GetTarget(1000);
-
-                    //if (target != null && !target.IsDead && target.IsMoving)
-                    //{
-                    //    Orbwalker.Move(myhero.Position.Extend(target.Direction, 50));
-                    //    myhero.
-                    //}
-
+                    Combo();
                     break;
                 case OrbwalkerMode.LaneClear:
                     if (myhero.ManaPercent >= slider(laneclear, "manamin")) Clear();
@@ -321,7 +299,6 @@ namespace T7Annie
             }
 
             Misc();
-            //Game.Print(myhero.Direction);
         }
 
         private static void Misc()
@@ -392,7 +369,7 @@ namespace T7Annie
                 Render.Circle.DrawCircle(myhero.Position, R.Range, Color.Red, 5, true);
             }
 
-            if (draw.check("dign") && (draw.check("drdy") ? ignite.IsReady() : true))
+            if (draw.check("dign") && ignite != null && (draw.check("drdy") ? ignite.IsReady() : true))
             {
                 Render.Circle.DrawCircle(myhero.Position, ignite.Range, Color.PaleVioletRed, 2);
             }
@@ -406,17 +383,13 @@ namespace T7Annie
         static void DatMenu()
         {
             menu = new Menu("t7annie", "T7 Annie", true);
-            menu.Add(new MenuSeparator("sep", "By Toyota7 v1.0"));
+            menu.Add(new MenuSeparator("sep", "By Toyota7 v1.1"));
             menu.Add(new MenuBool("usee", "Use E On Aggro"));
             menu.Add(new MenuBool("wks", "Use W To KS"));
             menu.Add(new MenuBool("autol", "Auto-LevelUp Skills"));
             menu.Add(new MenuBool("autop", "Auto-HealPotion"));
             menu.Add(new MenuSlider("autopm", "Min Health % To Pot", 75, 5, 95));
-            menu.Add(new MenuList("skin", "Skin Hack", new string[]
-            {
-                "Default", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Super Galaxy", "AnnieVersary"
-            }))
-            .ValueChanged += (s, e) => { skinchange = true; };
+            
 
             combo = new Menu("combo", "Combo");
             combo.Add(new MenuBool("cq", "Use Q"));
@@ -450,6 +423,11 @@ namespace T7Annie
             draw.Add(new MenuBool("dkill", "Draw Killable targets(Text)"));
             draw.Add(new MenuBool("drdy", "Draw Only Ready Spells", false));
             menu.Add(draw);
+            menu.Add(new MenuList("skin", "Skin Hack", new string[]
+            {
+                "Default", "Goth", "Red Riding", "Wonderland", "Prom Queen", "Frostfire", "Reverse", "FrankenTibbers", "Panda", "Sweetheart", "Hextech", "Super Galaxy", "AnnieVersary"
+            }))
+            .ValueChanged += (s, e) => { skinchange = true; };
 
             menu.Attach();
         }
